@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.16;
 
 // Import the library 'Roles'
 import "./Roles.sol";
@@ -31,7 +31,7 @@ contract FarmerRole {
   }
 
   // Define a function 'addFarmer' that adds this role
-  function addFarmer(address account) public onlyFarmer {
+  function addFarmer(address account) public {
     _addFarmer(account);
   }
 
