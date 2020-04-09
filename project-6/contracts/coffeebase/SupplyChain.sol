@@ -4,11 +4,12 @@ import '../coffeeaccesscontrol/FarmerRole.sol';
 import '../coffeeaccesscontrol/DistributorRole.sol';
 import '../coffeeaccesscontrol/RetailerRole.sol';
 import '../coffeeaccesscontrol/ConsumerRole.sol';
+import '../coffeecore/Ownable.sol';
 // Define a contract 'Supplychain'
-contract SupplyChain is FarmerRole, DistributorRole, RetailerRole, ConsumerRole {
+contract SupplyChain is FarmerRole, DistributorRole, RetailerRole, ConsumerRole, Ownable {
 
-  // Define 'owner'
-  address payable owner;
+  // Define 'iowner'
+  address payable iowner;
 
   // Define a variable called 'upc' for Universal Product Code (UPC)
   uint  upc;
@@ -67,11 +68,11 @@ contract SupplyChain is FarmerRole, DistributorRole, RetailerRole, ConsumerRole 
   event Received(uint upc);
   event Purchased(uint upc);
 
-  // Define a modifer that checks to see if msg.sender == owner of the contract
-  modifier onlyOwner() {
-    require(msg.sender == owner);
-    _;
-  }
+  //// Define a modifer that checks to see if msg.sender == owner of the contract
+  // modifier onlyOwner() {
+  //   require(msg.sender == iowner);
+  //   _;
+  // }
 
   // Define a modifer that verifies the Caller
   modifier verifyCaller (address _address) {
@@ -141,24 +142,24 @@ contract SupplyChain is FarmerRole, DistributorRole, RetailerRole, ConsumerRole 
     _;
   }
 
-  // In the constructor set 'owner' to the address that instantiated the contract
+  // In the constructor set 'iowner' to the address that instantiated the contract
   // and set 'sku' to 1
   // and set 'upc' to 1
   constructor() public payable {
-    owner = msg.sender;
+    iowner = msg.sender;
     sku = 1;
     upc = 1;
   }
 
   // Define a function 'kill' if required
   function kill() public {
-    if (msg.sender == owner) {
-      selfdestruct(owner);
+    if (msg.sender == iowner) {
+      selfdestruct(iowner);
     }
   }
 
   // Define a function 'harvestItem' that allows a farmer to mark an item 'Harvested'
-  function harvestItem(uint _upc, address payable _originFarmerID, string memory _originFarmName, string memory _originFarmInformation, string memory _originFarmLatitude, string memory _originFarmLongitude, string memory _productNotes) public
+  function harvestItem(uint _upc, address payable _originFarmerID, string memory _originFarmName, string memory _originFarmInformation, string memory _originFarmLatitude, string memory _originFarmLongitude, string memory _productNotes) public onlyFarmer
   {
     // Add the new item as part of Harvest
     items[_upc] = Item({
@@ -229,7 +230,7 @@ contract SupplyChain is FarmerRole, DistributorRole, RetailerRole, ConsumerRole 
   // and any excess ether sent is refunded back to the buyer
   function buyItem(uint _upc) public payable 
     // Call modifier to check if upc has passed previous supply chain stage
-     forSale(_upc) 
+     forSale(_upc) onlyDistributor 
     // Call modifer to check if buyer has paid enough
     paidEnough(items[_upc].productPrice)
     // Call modifer to send any excess ether back to buyer
@@ -264,7 +265,7 @@ contract SupplyChain is FarmerRole, DistributorRole, RetailerRole, ConsumerRole 
   // Use the above modifiers to check if the item is shipped
   function receiveItem(uint _upc) public 
     // Call modifier to check if upc has passed previous supply chain stage
-     shipped(_upc)
+     shipped(_upc) onlyRetailer
     // Access Control List enforced by calling Smart Contract / DApp
     {
     // Update the appropriate fields - ownerID, retailerID, itemState

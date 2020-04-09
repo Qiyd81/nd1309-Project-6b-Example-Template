@@ -20,6 +20,7 @@ contract('SupplyChain', function(accounts) {
     const retailerID = accounts[3]
     const consumerID = accounts[4]
     const emptyAddress = '0x00000000000000000000000000000000000000'
+    const newOwnerID = accounts[5]
 
     ///Available Accounts
     ///==================
@@ -299,6 +300,29 @@ contract('SupplyChain', function(accounts) {
         assert.equal(resultBufferTwo[7], retailerID, 'Error: Invalid item retailerID');
         assert.equal(resultBufferTwo[8], consumerID, 'Error: Invalid item consumerID');
     })
+    // 11th Test
+    it("Testing smart contract inheritated function owner() that allows anyone to fetch owner of the blockchain", async() => {
+        const supplyChain = await SupplyChain.deployed()
+
+        // Retrieve the just now saved item from blockchain by calling function owner()
+        const TestOwner = await supplyChain.owner()
+        
+        // Verify the result set:
+        assert.equal(TestOwner, accounts[0], 'Error: Invalid contract owner');
+
+    })
+    // 12th Test
+    it("Testing smart contract inheritated function transferOwnership() that allows owner of the blockchain to transfer owner to a new account", async() => {
+        const supplyChain = await SupplyChain.deployed()
+
+        // Retrieve the just now saved item from blockchain by calling function owner()
+        // const NewOwner = await supplyChain.transferOwnership(newOwnerID, {from: ownerID})
+        let tx = await supplyChain.transferOwnership(newOwnerID, {from: ownerID})
+        const TestOwner = await supplyChain.owner()
+        // Verify the result set:
+        assert.equal(TestOwner, newOwnerID, 'Error: Invalid contract owner transfer');
+        truffleAssert.eventEmitted(tx, 'TransferOwnership');
+    })    
 
 });
 
